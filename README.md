@@ -79,6 +79,32 @@ node prompt.js "How do I deploy my Expo app to the App Store?"
 
 Modify the query in the script to ask different questions.
 
+## Slug Scraper (Deno)
+To automatically generate a list of documentation pages to embed, you can use this Deno-based script to extract .mdx file paths from a local copy of the Expo docs:
+
+```js
+import { walk } from "https://deno.land/std/fs/mod.ts";
+
+const getSlugs = async (dir: string): Promise<string[]> => {
+  const slugs: string[] = [];
+
+  for await (const entry of walk(dir, { exts: [".mdx"], includeDirs: false })) {
+    const relative = entry.path
+      .replace(/^.*\/pages\//, "")
+      .replace(/\.mdx$/, "");
+    slugs.push(relative);
+  }
+
+  return slugs;
+};
+
+const slugs = await getSlugs("./docs/pages");
+
+await Deno.writeTextFile("slugs.json", JSON.stringify(slugs, null, 2));
+```
+This will write a slugs.json file that can be used as input to your index.js script.
+
+
 ## Project Structure
 
 - **docs-parser.js**: Fetches and parses Expo documentation from GitHub
